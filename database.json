@@ -1,0 +1,18 @@
+{
+    "records": [
+        {
+            "short_id": "967f9c",
+            "original_url": "https://www.geeksforgeeks.org/problems/candy/1",
+            "short_url": "http://127.0.0.1:5000/967f9c",
+            "summary": "Candy | Practice | GeeksforGeeks Data Structure Java Python HTML Interview Preparation Courses Tutorials Practice Jobs Menu Back to Explore Page . if you have any questions, please contact us .",
+            "clicks": 0
+        },
+        {
+            "short_id": "684c8a",
+            "original_url": "https://medium.com/@amanatulla1606/transformer-architecture-explained-2c49e2257b4c",
+            "short_url": "http://127.0.0.1:5000/684c8a",
+            "summary": "Transformers are a new development in machine learning that have been making a lot of noise lately . they can be used to write stories, essays, poems, answer questions, translate between languages, chat with humans, and even pass exams that are hard for humans . transformers keep track of the context of what is being written . if you type \u201cHello, how are\u201d, the phone may suggest words such as \u201cyou\u201d or \u201cyour\u201d as the next word .",
+            "clicks": 1
+        }
+    ]
+}
