@@ -6,66 +6,75 @@ import json
 import os
 import re
 
-summarizer = pipeline("summarization", model="t5-small")
-
 DB_PATH = "database.json"
+summarizer = None   # lazy load T5-small only once
+
+
+def load_summarizer():
+    """Load the T5-small summarizer only once (important for Render)."""
+    global summarizer
+    if summarizer is None:
+        summarizer = pipeline("summarization", model="t5-small")
+    return summarizer
+
 
 def generate_short_id(url):
     return hashlib.md5(url.encode()).hexdigest()[:6]
 
+
 def clean_text(text):
-    text = re.sub(r'\s+', ' ', text)
-    return text.strip()
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
 
 def fetch_page_text(url):
     """Extract readable text from webpage."""
     try:
         print("[DEBUG] Fetching:", url)
 
-        response = requests.get(url, timeout=8, headers={
+        response = requests.get(url, timeout=10, headers={
             "User-Agent": "Mozilla/5.0"
         })
 
         soup = BeautifulSoup(response.text, "lxml")
 
-        # Remove scripts & styles
+        # Remove noise
         for tag in soup(["script", "style", "noscript"]):
             tag.extract()
 
-        # Extract *all* visible text
         text = soup.get_text(separator=" ")
-
         text = clean_text(text)
 
         print("[DEBUG] Extracted text length:", len(text))
 
-        # Ensure it's not too long for T5-small
-        return text[:2000] if text else "No readable content found."
+        # Avoid overloading T5-small
+        return text[:2500] if len(text) > 0 else "No readable content found."
 
     except Exception as e:
         return f"Error fetching content: {e}"
 
-def summarize_text(text):
-    """Summarize long text by chunking into smaller parts."""
 
+def summarize_text(text):
+    """Summarize long text using T5-small with chunking."""
     try:
         print("[DEBUG] Summarizing text...")
+
+        summarizer_model = load_summarizer()
 
         if len(text) < 80:
             return "Not enough content to summarize."
 
-        # Break into chunks of ~1000 characters (safe for T5)
         chunk_size = 1000
-        chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+        chunks = [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
 
         print(f"[DEBUG] Total chunks: {len(chunks)}")
 
         chunk_summaries = []
 
         for idx, chunk in enumerate(chunks):
-            print(f"[DEBUG] Summarizing chunk {idx+1}/{len(chunks)}")
+            print(f"[DEBUG] Summarizing chunk {idx + 1}/{len(chunks)}")
 
-            summary = summarizer(
+            summary = summarizer_model(
                 chunk,
                 max_length=150,
                 min_length=50,
@@ -74,13 +83,11 @@ def summarize_text(text):
 
             chunk_summaries.append(summary)
 
-        # Combine all chunk summaries
         combined_text = " ".join(chunk_summaries)
 
-        print("[DEBUG] Summarizing combined summary...")
+        print("[DEBUG] Generating final summary...")
 
-        # Final summary (summary of summaries)
-        final_summary = summarizer(
+        final_summary = summarizer_model(
             combined_text,
             max_length=150,
             min_length=60,
@@ -99,6 +106,7 @@ def load_db():
             json.dump({"records": []}, f)
     with open(DB_PATH, "r") as f:
         return json.load(f)
+
 
 def save_db(data):
     with open(DB_PATH, "w") as f:
