@@ -1,223 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart URL Summarizer</title>
-
-  <link rel="stylesheet" href="/static/style.css">
-
-  <style>
-      body {
-          font-family: 'Segoe UI', sans-serif;
-          background: #f0f2f5;
-          margin: 0;
-          padding: 30px;
-          display: flex;
-          justify-content: center;
-      }
-
-      h1 {
-          text-align: center;
-          color: #1877f2;
-      }
-
-      .container {
-          width: 90%;
-          max-width: 1000px;
-          background: white;
-          padding: 30px;
-          border-radius: 15px;
-          box-shadow: 0 5px 18px rgba(0,0,0,0.12);
-      }
-
-      form {
-          display: flex;
-          gap: 10px;
-          margin-bottom: 25px;
-      }
-
-      input {
-          padding: 12px;
-          flex: 1;
-          border-radius: 8px;
-          border: 1px solid #ccc;
-      }
-
-      button {
-          padding: 12px 20px;
-          background: #1877f2;
-          border: none;
-          border-radius: 8px;
-          color: white;
-          cursor: pointer;
-          font-weight: 600;
-      }
-
-      button:hover {
-          background: #0f5fcc;
-      }
-
-      table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 20px;
-      }
-
-      th {
-          background: #1877f2;
-          color: white;
-          padding: 10px;
-      }
-
-      td {
-          padding: 10px;
-          border-bottom: 1px solid #ddd;
-      }
-
-      .summary-btn {
-          background: #22a6b3;
-          color: white;
-          padding: 6px 12px;
-          border-radius: 6px;
-          cursor: pointer;
-          text-decoration: none;
-          font-size: 0.9em;
-      }
-
-      .summary-btn:hover {
-          background: #1b8c96;
-      }
-
-      .delete-btn {
-          background: #e84118;
-          color: white;
-          padding: 6px 12px;
-          border-radius: 6px;
-          text-decoration: none;
-          font-size: 0.9em;
-      }
-
-      .delete-btn:hover {
-          background: #c23616;
-      }
-
-      footer {
-          text-align: center;
-          margin-top: 25px;
-          color: #333;
-          font-size: 0.9em;
-      }
-
-      .modal {
-          display: none;
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0,0,0,0.6);
-          justify-content: center;
-          align-items: center;
-      }
-
-      .modal-content {
-          background: white;
-          padding: 25px;
-          width: 70%;
-          max-width: 700px;
-          border-radius: 10px;
-          box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-          max-height: 80vh;
-          overflow-y: auto;
-      }
-
-      .close {
-          float: right;
-          font-size: 22px;
-          cursor: pointer;
-      }
-  </style>
-
+    <title>URL Shortener and Summarizer</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script>
+        function openSummary(text) {
+            alert(text);
+        }
+    </script>
 </head>
 
 <body>
-
-<div class="container">
-
     <h1>Smart URL Summarizer</h1>
 
-    <form action="/shorten" method="POST">
-        <input type="url" name="url" placeholder="Enter a URL to summarize..." required>
-        <button type="submit">Summarize</button>
-    </form>
-
     {% if message %}
-      <p class="message">{{ message }}</p>
+        <p class="msg">{{ message }}</p>
     {% endif %}
 
-    <h2>Stored URLs</h2>
+    <form action="/shorten" method="POST">
+        <input type="text" name="url" placeholder="Enter URL" required>
+        <button type="submit">Shorten</button>
+    </form>
+
+    <h2>Saved URLs</h2>
 
     <table>
         <tr>
-            <th>Original</th>
-            <th>Short</th>
+            <th>Original URL</th>
+            <th>Short ID</th>
+            <th>Summary</th>
             <th>Clicks</th>
             <th>Actions</th>
         </tr>
 
         {% for rec in records %}
         <tr>
+            <td>{{ rec.original_url }}</td>
+            <td>{{ rec.short_id }}</td>
             <td>
-                <a href="{{ rec.original_url }}" target="_blank">
-                    {{ rec.original_url[:40] }}...
-                </a>
+                <button onclick='openSummary({{ rec.summary | tojson | safe }})'>
+                    View Summary
+                </button>
             </td>
-
-            <td>
-                <a href="{{ rec.short_url }}" target="_blank">
-                    {{ rec.short_url }}
-                </a>
-            </td>
-
             <td>{{ rec.clicks }}</td>
-
             <td>
-                <a class="summary-btn" href="#" onclick="openSummary({{ rec.summary | tojson | safe }})">View Summary</a>
                 <a class="delete-btn" href="/delete/{{ rec.short_id }}">Delete</a>
             </td>
         </tr>
         {% endfor %}
     </table>
-
-</div>
-
-
-<div id="summaryModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeSummary()">&times;</span>
-        <h3>Summary</h3>
-        <p id="summaryText"></p>
-    </div>
-</div>
-
-<script>
-function openSummary(text) {
-    document.getElementById("summaryText").innerText = text;
-    document.getElementById("summaryModal").style.display = "flex";
-}
-
-function closeSummary() {
-    document.getElementById("summaryModal").style.display = "none";
-}
-
-window.onclick = function(event) {
-    let modal = document.getElementById("summaryModal");
-    if (event.target === modal) {
-        modal.style.display = "none";
-    }
-}
-</script>
 
 </body>
 </html>
