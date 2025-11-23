@@ -13,5 +13,6 @@ tqdm
 regex
 nltk==3.8.1
 gunicorn==21.2.0
+jinja2
 
 
