@@ -11,3 +11,7 @@ lxml_html_clean
 newspaper3k==0.2.8
 tqdm
 regex
+nltk==3.8.1
+gunicorn==21.2.0
+
+
