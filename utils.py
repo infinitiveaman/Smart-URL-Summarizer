@@ -11,7 +11,7 @@ summarizer = pipeline("summarization", model="t5-small")
 DB_PATH = "database.json"
 
 def generate_short_id(url):
-    return hashlib.md5(url.encode()).hexdigest()[:6]
+    return hashlib.sha256(url.encode()).hexdigest()[:6]
 
 def clean_text(text):
     text = re.sub(r'\s+', ' ', text)
@@ -103,3 +103,4 @@ def load_db():
 def save_db(data):
     with open(DB_PATH, "w") as f:
         json.dump(data, f, indent=4)
+
